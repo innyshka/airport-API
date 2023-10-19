@@ -8,17 +8,17 @@ from django.db import models
 from django.utils.text import slugify
 
 
-def image_file_path(instance, filename, folder):
-    _, extension = os.path.splitext(filename)
-    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
-    return os.path.join(f"uploads/{folder}/", filename)
-
-
 class AirplaneType(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self) -> str:
         return self.name
+
+
+def airplane_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    return os.path.join("uploads/airplanes/", filename)
 
 
 class Airplane(models.Model):
@@ -32,9 +32,7 @@ class Airplane(models.Model):
     )
     image = models.ImageField(
         null=True,
-        upload_to=lambda instance, filename: image_file_path(
-            instance, filename, "airplanes"
-        )
+        upload_to=airplane_image_file_path
     )
 
     @property
@@ -45,14 +43,18 @@ class Airplane(models.Model):
         return self.name
 
 
+def crew_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.first_name)}-{uuid.uuid4()}{extension}"
+    return os.path.join("uploads/crews/", filename)
+
+
 class Crew(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     image = models.ImageField(
         null=True,
-        upload_to=lambda instance, filename: image_file_path(
-            instance, filename, "crews"
-        )
+        upload_to=crew_image_file_path
     )
 
     def __str__(self) -> str:
@@ -63,14 +65,19 @@ class Crew(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+def airport_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    return os.path.join("uploads/airports/", filename)
+
+
 class Airport(models.Model):
     name = models.CharField(max_length=255)
     closest_big_city = models.CharField(max_length=255)
     image = models.ImageField(
+
         null=True,
-        upload_to=lambda instance, filename: image_file_path(
-            instance, filename, 'airports'
-        )
+        upload_to=airport_image_file_path
     )
 
     def __str__(self) -> str:
@@ -81,12 +88,12 @@ class Route(models.Model):
     source = models.ForeignKey(
         Airport,
         on_delete=models.CASCADE,
-        related_name="routes"
+        related_name="source_routes"
     )
     destination = models.ForeignKey(
         Airport,
         on_delete=models.CASCADE,
-        related_name="routes"
+        related_name="destination_routes"
     )
     distance = models.IntegerField(validators=[MinValueValidator(0)])
 
