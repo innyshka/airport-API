@@ -28,7 +28,10 @@ from airport.serializers import (
     AirportSerializer,
     AirportListSerializer,
     AirportDetailSerializer,
-    AirportImageSerializer
+    AirportImageSerializer,
+    RouteSerializer,
+    RouteListSerializer,
+    RouteDetailSerializer,
 )
 
 
@@ -127,3 +130,23 @@ class AirportViewSet(
             return AirportImageSerializer
 
         return AirportSerializer
+
+
+class RouteViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet,
+):
+    queryset = Route.objects.all()
+    serializer_class = RouteSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+        if self.action == "retrieve":
+            return RouteDetailSerializer
+        return RouteSerializer
+
+

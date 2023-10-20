@@ -114,3 +114,29 @@ class AirportImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = ("id", "image")
+
+
+class RouteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Route
+        fields = ("source", "destination", "distance")
+
+
+class RouteListSerializer(serializers.ModelSerializer):
+    source_name = serializers.CharField(
+        source="source.name",
+        read_only=True
+    )
+    destination_name = serializers.CharField(
+        source="destination.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = Route
+        fields = ("source_name", "destination_name", "distance")
+
+
+class RouteDetailSerializer(RouteSerializer):
+    source = AirportListSerializer(many=False, read_only=True)
+    destination = AirportDetailSerializer(many=False, read_only=True)
