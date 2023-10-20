@@ -44,10 +44,22 @@ def crew_image_file_path(instance, filename):
     return os.path.join("uploads/crews/", filename)
 
 
+class JobPosition(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class Crew(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     image = models.ImageField(null=True, upload_to=crew_image_file_path)
+    position = models.ForeignKey(
+        JobPosition,
+        on_delete=models.CASCADE,
+        related_name="crews",
+    )
 
     def __str__(self) -> str:
         return self.first_name + " " + self.last_name
@@ -83,6 +95,20 @@ class Route(models.Model):
 
     def __str__(self) -> str:
         return f"from {self.source} to {self.destination}"
+
+    def clean(self):
+        Route.validate_time(
+            self.source, self.destination, ValidationError
+        )
+
+    @staticmethod
+    def validate_time(source, destination, error_to_raise):
+        if source == destination:
+            raise error_to_raise(
+                {
+                    "error": "Source cannot be equal to destination!"
+                }
+            )
 
 
 class Flight(models.Model):

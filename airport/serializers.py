@@ -11,6 +11,7 @@ from airport.models import (
     Route,
     Order,
     Flight,
+    JobPosition,
 )
 
 
@@ -20,13 +21,21 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+class JobPositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPosition
+        fields = ("id", "title")
+
+
 class CrewSerializer(serializers.ModelSerializer):
+    position = serializers.CharField(source="position.title")
+
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name", "full_name")
+        fields = ("id", "first_name", "last_name", "full_name", "position")
 
 
-class CrewDetailSerializer(serializers.ModelSerializer):
+class CrewDetailSerializer(CrewSerializer):
     flights_count = serializers.IntegerField()
 
     class Meta:
@@ -36,6 +45,7 @@ class CrewDetailSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "full_name",
+            "position",
             "flights_count",
             "image"
         )
@@ -124,12 +134,19 @@ class AirportImageSerializer(serializers.ModelSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(RouteSerializer, self).validate(attrs=attrs)
+        Route.validate_time(
+            attrs["source"], attrs["destination"], ValidationError
+        )
+        return data
+
     class Meta:
         model = Route
-        fields = ("source", "destination", "distance")
+        fields = ("id", "source", "destination", "distance")
 
 
-class RouteListSerializer(serializers.ModelSerializer):
+class RouteListSerializer(RouteSerializer):
     source_name = serializers.CharField(source="source.name", read_only=True)
     destination_name = serializers.CharField(
         source="destination.name", read_only=True
@@ -137,7 +154,7 @@ class RouteListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ("source_name", "destination_name", "distance")
+        fields = ("id", "source_name", "destination_name", "distance")
 
 
 class RouteDetailSerializer(RouteSerializer):
@@ -156,10 +173,16 @@ class FlightSerializers(serializers.ModelSerializer):
     departure_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
     arrival_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
 
-
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "crews", "departure_time", "arrival_time")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crews",
+            "departure_time",
+            "arrival_time"
+        )
 
 
 class FlightListSerializer(FlightSerializers):
