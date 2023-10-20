@@ -43,7 +43,13 @@ class CrewListSerializer(CrewSerializer):
 
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name", "full_name", "position_name")
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "full_name",
+            "position_name"
+        )
 
 
 class CrewDetailSerializer(CrewSerializer):

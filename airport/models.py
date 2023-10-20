@@ -35,6 +35,7 @@ class Airplane(models.Model):
 
     class Meta:
         unique_together = ("name", )
+
     @property
     def capacity(self) -> int:
         return self.rows * self.seats_in_row
@@ -56,7 +57,7 @@ class JobPosition(models.Model):
         return self.title
 
     class Meta:
-        unique_together = ("name", )
+        unique_together = ("title", )
 
 
 class Crew(models.Model):

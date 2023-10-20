@@ -38,7 +38,11 @@ from airport.serializers import (
     FlightListSerializer,
     FlightDetailSerializer,
     OrderSerializer,
-    OrderListSerializer, JobPositionSerializer, CrewListSerializer, CountrySerializer, CitySerializer,
+    OrderListSerializer,
+    JobPositionSerializer,
+    CrewListSerializer,
+    CountrySerializer,
+    CitySerializer,
     CityListSerializer,
 )
 
@@ -104,7 +108,10 @@ class CrewViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Crew.objects.all().prefetch_related("flights")
+    queryset = (
+        Crew.objects.all().prefetch_related("flights")
+        .select_related("position")
+    )
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -181,7 +188,7 @@ class CityViewSet(
     mixins.ListModelMixin,
     GenericViewSet
 ):
-    queryset = City.objects.all()
+    queryset = City.objects.all().select_related("country")
     serializer_class = CitySerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -198,7 +205,7 @@ class AirportViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Airport.objects.all()
+    queryset = Airport.objects.all().select_related("closest_big_city")
     serializer_class = AirportSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -273,7 +280,7 @@ class FlightViewSet(viewsets.ModelViewSet):
             "airplane__airplane_type",
             "route__source",
             "route__destination",
-        )
+        ).prefetch_related("crews")
         .annotate(
             tickets_available=(
                 F("airplane__rows") * F("airplane__seats_in_row")
@@ -331,7 +338,8 @@ class OrderViewSet(
     GenericViewSet,
 ):
     queryset = Order.objects.prefetch_related(
-        "tickets__flight__airplane", "tickets__flight__route",
+        "tickets__flight__airplane",
+        "tickets__flight__route",
     )
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
