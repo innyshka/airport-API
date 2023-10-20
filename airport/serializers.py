@@ -27,9 +27,18 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class CrewDetailSerializer(serializers.ModelSerializer):
+    flights_count = serializers.IntegerField()
+
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name", "full_name", "image")
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "full_name",
+            "flights_count",
+            "image"
+        )
 
 
 class CrewImageSerializer(serializers.ModelSerializer):
@@ -88,7 +97,7 @@ class AirplaneDetailSerializer(serializers.ModelSerializer):
 
 class AirplaneImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Crew
+        model = Airplane
         fields = ("id", "image")
 
 
@@ -147,9 +156,10 @@ class FlightSerializers(serializers.ModelSerializer):
     departure_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
     arrival_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
 
+
     class Meta:
         model = Flight
-        fields = ("route", "airplane", "departure_time", "arrival_time")
+        fields = ("id", "route", "airplane", "crews", "departure_time", "arrival_time")
 
 
 class FlightListSerializer(FlightSerializers):
@@ -161,12 +171,17 @@ class FlightListSerializer(FlightSerializers):
         source="airplane.capacity", read_only=True
     )
     tickets_available = serializers.IntegerField(read_only=True)
+    crews = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="full_name"
+    )
 
     class Meta:
         model = Flight
         fields = (
+            "id",
             "route",
             "airplane_name",
+            "crews",
             "airplane_capacity",
             "departure_time",
             "arrival_time",
@@ -206,12 +221,15 @@ class FlightDetailSerializer(FlightListSerializer):
     taken_places = TicketSeatsSerializer(
         source="tickets", many=True, read_only=True
     )
+    crews = CrewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Flight
         fields = (
+            "id",
             "route",
             "airplane",
+            "crews",
             "departure_time",
             "arrival_time",
             "taken_places",

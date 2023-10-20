@@ -79,9 +79,16 @@ class CrewViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Crew.objects.all()
+    queryset = Crew.objects.all().prefetch_related("flights")
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        if self.action == "retrieve":
+            return self.queryset.annotate(
+                flights_count=Count("flights")
+            )
+        return self.queryset
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -100,7 +107,7 @@ class AirplaneViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Airplane.objects.all()
+    queryset = Airplane.objects.all().select_related("airplane_type")
     serializer_class = AirplaneSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -143,7 +150,7 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Route.objects.all()
+    queryset = Route.objects.all().select_related("source", "destination")
     serializer_class = RouteSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -158,7 +165,7 @@ class RouteViewSet(
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = (
         Flight.objects.all()
-        .select_related("airplane", "route")
+        .select_related("airplane__airplane_type", "route__source", "route__destination", )
         .annotate(
             tickets_available=(
                 F("airplane__rows") * F("airplane__seats_in_row")
@@ -190,7 +197,7 @@ class OrderViewSet(
     GenericViewSet,
 ):
     queryset = Order.objects.prefetch_related(
-        "tickets__flight__airplane", "tickets__flight__route"
+        "tickets__flight__airplane", "tickets__flight__route",
     )
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
