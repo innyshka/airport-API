@@ -1,3 +1,4 @@
+from django.db.models import F, Count
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAdminUser
@@ -32,6 +33,8 @@ from airport.serializers import (
     RouteSerializer,
     RouteListSerializer,
     RouteDetailSerializer,
+    FlightSerializers,
+    FlightListSerializer, FlightDetailSerializer
 )
 
 
@@ -150,3 +153,25 @@ class RouteViewSet(
         return RouteSerializer
 
 
+class FlightViewSet(viewsets.ModelViewSet):
+    queryset = (
+        Flight.objects.all()
+        .select_related("airplane", "route")
+        .annotate(
+            tickets_available=(
+                    F("airplane__rows") * F("airplane__seats_in_row")
+                    - Count("tickets")
+            )
+        )
+    )
+    serializer_class = FlightSerializers
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FlightListSerializer
+
+        if self.action == "retrieve":
+            return FlightDetailSerializer
+
+        return FlightSerializers

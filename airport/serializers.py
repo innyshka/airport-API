@@ -138,5 +138,63 @@ class RouteListSerializer(serializers.ModelSerializer):
 
 
 class RouteDetailSerializer(RouteSerializer):
-    source = AirportListSerializer(many=False, read_only=True)
-    destination = AirportDetailSerializer(many=False, read_only=True)
+    source = AirportListSerializer(
+        many=False,
+        read_only=True
+    )
+    destination = AirportDetailSerializer(
+        many=False,
+        read_only=True
+    )
+
+
+class FlightSerializers(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(FlightSerializers, self).validate(attrs=attrs)
+        Flight.validate_time(
+            attrs["departure_time"],
+            attrs["arrival_time"],
+            ValidationError
+        )
+        return data
+
+    departure_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
+    arrival_time = serializers.DateTimeField(format="%H:%M:%S %d-%m-%Y")
+
+    class Meta:
+        model = Flight
+        fields = ("route", "airplane", "departure_time", "arrival_time")
+
+
+class FlightListSerializer(FlightSerializers):
+    route = RouteListSerializer(many=False, read_only=True)
+    airplane_name = serializers.CharField(source="airplane.name", read_only=True)
+    airplane_capacity = serializers.CharField(source="airplane.capacity", read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "route",
+            "airplane_name",
+            "airplane_capacity",
+            "departure_time",
+            "arrival_time",
+            "tickets_available"
+        )
+
+
+class FlightDetailSerializer(FlightListSerializer):
+    route = RouteDetailSerializer(many=False, read_only=True)
+    airplane = AirplaneDetailSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "tickets_available"
+        )
+
