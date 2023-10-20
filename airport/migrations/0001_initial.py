@@ -28,19 +28,24 @@ class Migration(migrations.Migration):
                 (
                     "rows",
                     models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
+                        validators=[
+                            django.core.validators.MinValueValidator(1)
+                        ]
                     ),
                 ),
                 (
                     "seats_in_row",
                     models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(1)]
+                        validators=[
+                            django.core.validators.MinValueValidator(1)
+                        ]
                     ),
                 ),
                 (
                     "image",
                     models.ImageField(
-                        null=True, upload_to=airport.models.airplane_image_file_path
+                        null=True,
+                        upload_to=airport.models.airplane_image_file_path,
                     ),
                 ),
             ],
@@ -77,7 +82,8 @@ class Migration(migrations.Migration):
                 (
                     "image",
                     models.ImageField(
-                        null=True, upload_to=airport.models.airport_image_file_path
+                        null=True,
+                        upload_to=airport.models.airport_image_file_path,
                     ),
                 ),
             ],
@@ -99,7 +105,8 @@ class Migration(migrations.Migration):
                 (
                     "image",
                     models.ImageField(
-                        null=True, upload_to=airport.models.crew_image_file_path
+                        null=True,
+                        upload_to=airport.models.crew_image_file_path,
                     ),
                 ),
             ],
@@ -191,7 +198,9 @@ class Migration(migrations.Migration):
                 (
                     "distance",
                     models.IntegerField(
-                        validators=[django.core.validators.MinValueValidator(0)]
+                        validators=[
+                            django.core.validators.MinValueValidator(0)
+                        ]
                     ),
                 ),
                 (

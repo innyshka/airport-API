@@ -1,7 +1,8 @@
 from django.db.models import F, Count
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
@@ -14,7 +15,7 @@ from airport.models import (
     Ticket,
     Route,
     Order,
-    Flight
+    Flight,
 )
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
@@ -34,7 +35,10 @@ from airport.serializers import (
     RouteListSerializer,
     RouteDetailSerializer,
     FlightSerializers,
-    FlightListSerializer, FlightDetailSerializer
+    FlightListSerializer,
+    FlightDetailSerializer,
+    OrderSerializer,
+    OrderListSerializer,
 )
 
 
@@ -61,9 +65,7 @@ class UploadImageViewSet(mixins.CreateModelMixin, GenericViewSet):
 
 
 class AirplaneTypeViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet
+    mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
@@ -159,8 +161,8 @@ class FlightViewSet(viewsets.ModelViewSet):
         .select_related("airplane", "route")
         .annotate(
             tickets_available=(
-                    F("airplane__rows") * F("airplane__seats_in_row")
-                    - Count("tickets")
+                F("airplane__rows") * F("airplane__seats_in_row")
+                - Count("tickets")
             )
         )
     )
@@ -175,3 +177,33 @@ class FlightViewSet(viewsets.ModelViewSet):
             return FlightDetailSerializer
 
         return FlightSerializers
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 2
+    max_page_size = 100
+
+
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Order.objects.prefetch_related(
+        "tickets__flight__airplane", "tickets__flight__route"
+    )
+    serializer_class = OrderSerializer
+    pagination_class = OrderPagination
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+
+        return OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
