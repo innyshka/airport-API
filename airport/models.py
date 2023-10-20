@@ -14,6 +14,9 @@ class AirplaneType(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    class Meta:
+        unique_together = ("name", )
+
 
 def airplane_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
@@ -30,6 +33,8 @@ class Airplane(models.Model):
     )
     image = models.ImageField(null=True, upload_to=airplane_image_file_path)
 
+    class Meta:
+        unique_together = ("name", )
     @property
     def capacity(self) -> int:
         return self.rows * self.seats_in_row
@@ -49,6 +54,9 @@ class JobPosition(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    class Meta:
+        unique_together = ("name", )
 
 
 class Crew(models.Model):
@@ -75,13 +83,45 @@ def airport_image_file_path(instance, filename):
     return os.path.join("uploads/airports/", filename)
 
 
+class Country(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        unique_together = ("name", )
+
+
+class City(models.Model):
+    name = models.CharField(max_length=255)
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE,
+        related_name="cities"
+    )
+
+    def __str__(self) -> str:
+        return f"{self.name}({self.country.name})"
+
+    class Meta:
+        unique_together = ("name", )
+
+
 class Airport(models.Model):
     name = models.CharField(max_length=255)
-    closest_big_city = models.CharField(max_length=255)
+    closest_big_city = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        related_name="airports",
+    )
     image = models.ImageField(null=True, upload_to=airport_image_file_path)
 
     def __str__(self) -> str:
-        return f"{self.name}({self.closest_big_city})"
+        return f"{self.name}({self.closest_big_city.name})"
+
+    class Meta:
+        unique_together = ("name", )
 
 
 class Route(models.Model):

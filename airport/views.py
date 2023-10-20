@@ -15,7 +15,7 @@ from airport.models import (
     Crew,
     Route,
     Order,
-    Flight,
+    Flight, JobPosition, Country, City,
 )
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
@@ -38,7 +38,8 @@ from airport.serializers import (
     FlightListSerializer,
     FlightDetailSerializer,
     OrderSerializer,
-    OrderListSerializer,
+    OrderListSerializer, JobPositionSerializer, CrewListSerializer, CountrySerializer, CitySerializer,
+    CityListSerializer,
 )
 
 
@@ -86,6 +87,16 @@ class AirplaneTypeViewSet(
         return queryset
 
 
+class JobPositionViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = JobPosition.objects.all()
+    serializer_class = JobPositionSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
 class CrewViewSet(
     UploadImageViewSet,
     mixins.CreateModelMixin,
@@ -109,6 +120,8 @@ class CrewViewSet(
         return self.queryset
 
     def get_serializer_class(self):
+        if self.action == "list":
+            return CrewListSerializer
         if self.action == "retrieve":
             return CrewDetailSerializer
 
@@ -150,6 +163,31 @@ class AirplaneViewSet(
         if self.action == "upload_image":
             return AirplaneImageSerializer
 
+        return self.serializer_class
+
+
+class CountryViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
+class CityViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet
+):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CityListSerializer
         return self.serializer_class
 
 
