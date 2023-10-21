@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.db.models import F, Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import viewsets, mixins, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -15,7 +17,10 @@ from airport.models import (
     Crew,
     Route,
     Order,
-    Flight, JobPosition, Country, City,
+    Flight,
+    JobPosition,
+    Country,
+    City,
 )
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
@@ -81,15 +86,6 @@ class AirplaneTypeViewSet(
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
-    def get_queryset(self):
-        name = self.request.query_params.get("name")
-        queryset = self.queryset
-
-        if name:
-            queryset = queryset.filter(name__icontains=name)
-
-        return queryset
-
 
 class JobPositionViewSet(
     mixins.CreateModelMixin,
@@ -137,6 +133,18 @@ class CrewViewSet(
 
         return self.serializer_class
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "positions",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by position id (ex. ?positions=2,5)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class AirplaneViewSet(
     UploadImageViewSet,
@@ -171,6 +179,24 @@ class AirplaneViewSet(
             return AirplaneImageSerializer
 
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "airplane_types",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by airplane_type id "
+                            "(ex. ?airplane_types=2,5)",
+            ),
+            OpenApiParameter(
+                "name",
+                type=OpenApiTypes.STR,
+                description="Filter by airplane name (ex. ?name=test)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CountryViewSet(
@@ -211,17 +237,11 @@ class AirportViewSet(
 
     def get_queryset(self):
         name = self.request.query_params.get("name")
-        closest_big_city = self.request.query_params.get("closest_big_city")
 
         queryset = self.queryset
 
         if name:
             queryset = queryset.filter(name__icontains=name)
-        if closest_big_city:
-            queryset = queryset.filter(
-                closest_big_city__icontains=closest_big_city
-            )
-
         return queryset
 
     def get_serializer_class(self):
@@ -233,6 +253,18 @@ class AirportViewSet(
             return AirportImageSerializer
 
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "Airport",
+                type=OpenApiTypes.STR,
+                description="Filter by name (ex. ?name=Borispil)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class RouteViewSet(
@@ -266,6 +298,23 @@ class RouteViewSet(
         if self.action == "retrieve":
             return RouteDetailSerializer
         return self.serializer_class
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by source id (ex. ?source=2,5)",
+            ),
+            OpenApiParameter(
+                "destination",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by destination id (ex. ?destination=2,5)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class FlightPagination(PageNumberPagination):
@@ -326,6 +375,34 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         return self.serializer_class
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "departure_time",
+                type=OpenApiTypes.DATE,
+                description=(
+                    "Filter by departure time of Flight "
+                    "(ex. ?departure_time=16:59:11 19-10-2023)"
+                ),
+            ),
+            OpenApiParameter(
+                "arrival_time",
+                type=OpenApiTypes.DATE,
+                description=(
+                    "Filter by arrival time of Flight "
+                    "(ex. ?arrival_time=16:59:11 19-10-2023)"
+                ),
+            ),
+            OpenApiParameter(
+                "route",
+                type={"type": "list", "items": {"type": "number"}},
+                description="Filter by route id (ex. ?route=2,5)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class OrderPagination(PageNumberPagination):
     page_size = 2
@@ -334,6 +411,7 @@ class OrderPagination(PageNumberPagination):
 
 class OrderViewSet(
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     GenericViewSet,
 ):
@@ -349,7 +427,7 @@ class OrderViewSet(
         return self.queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ("list", "retrieve"):
             return OrderListSerializer
 
         return OrderSerializer

@@ -106,7 +106,7 @@ class AirplaneListSerializer(AirplaneSerializer):
         )
 
 
-class AirplaneDetailSerializer(AirplaneSerializer):
+class AirplaneDetailSerializer(AirplaneListSerializer):
 
     class Meta:
         model = Airplane

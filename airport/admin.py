@@ -9,6 +9,9 @@ from .models import (
     Ticket,
     Flight,
     Order,
+    JobPosition,
+    Country,
+    City,
 )
 
 admin.site.register(Airplane)
@@ -19,3 +22,6 @@ admin.site.register(Route)
 admin.site.register(Ticket)
 admin.site.register(Flight)
 admin.site.register(Order)
+admin.site.register(JobPosition)
+admin.site.register(Country)
+admin.site.register(City)
