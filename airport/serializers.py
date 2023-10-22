@@ -162,7 +162,7 @@ class AirportListSerializer(AirportSerializer):
 
 
 class AirportDetailSerializer(serializers.ModelSerializer):
-    closest_big_city = CitySerializer(many=False, read_only=True)
+    closest_big_city = CityListSerializer(many=False, read_only=True)
 
     class Meta:
         model = Airport
@@ -286,7 +286,7 @@ class FlightDetailSerializer(FlightListSerializer):
     taken_places = TicketSeatsSerializer(
         source="tickets", many=True, read_only=True
     )
-    crews = CrewSerializer(many=True, read_only=True)
+    crews = CrewListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Flight
