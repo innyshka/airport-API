@@ -69,4 +69,4 @@ password: admin
 - you can upload image for airplane, crew and airport in api/airport/<entity>/upload-image
 
 ## DB structure
-![DB structure](drf%20project.drawio.png)
+![DB structure](demo/schema.png)
