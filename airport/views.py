@@ -133,18 +133,6 @@ class CrewViewSet(
 
         return self.serializer_class
 
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                "positions",
-                type={"type": "list", "items": {"type": "number"}},
-                description="Filter by position id (ex. ?positions=2,5)",
-            ),
-        ]
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
 
 class AirplaneViewSet(
     UploadImageViewSet,
@@ -253,18 +241,6 @@ class AirportViewSet(
             return AirportImageSerializer
 
         return self.serializer_class
-
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                "Airport",
-                type=OpenApiTypes.STR,
-                description="Filter by name (ex. ?name=Borispil)",
-            ),
-        ]
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
 class RouteViewSet(
