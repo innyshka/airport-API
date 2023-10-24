@@ -69,12 +69,12 @@ class Crew(models.Model):
         related_name="crews",
     )
 
-    def __str__(self) -> str:
-        return self.first_name + " " + self.last_name
-
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+
+    def __str__(self) -> str:
+        return self.full_name
 
 
 def airport_image_file_path(instance, filename):
