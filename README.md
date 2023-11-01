@@ -3,7 +3,7 @@
 
 The Airport API Service is a versatile backend solution for managing airport-related data and facilitating flight bookings. It offers CRUD (Create, Read, Update, Delete) operations for cities, routes, airplanes, and flights for administrators while providing the opportunity for everyone to book seats for flights through orders.
 
-## Installation
+## ⚙️ Installation
 
 Python3 must be already installed.
 Also install PostgreSQL and create db.
@@ -19,19 +19,19 @@ python manage.py migrate
 python manage.py runserver #starts Django server
 ```
 
-## Run with Docker
+## 🐳 Run with Docker
 
 [Docker](https://www.docker.com/products/docker-desktop) should be installed.
 ```shell
 docker-compose up --build
 ```
 
-## Accessing the Application
+## ✅ Accessing the Application
 
 You can now access the API by opening your web browser 
 and navigating to http://localhost:8000.
 
-#### Test admin user
+#### 🔏 Test admin user
 ```shell
 email: admin@admin.com
 password: admin
@@ -42,7 +42,7 @@ password: admin
 - verify token api/user/token/verify
 - your profile api/user/me
 
-#### Available urls
+#### 📍 Available urls
 - api/airport/airplane_types/
 - api/airport/positions/
 - api/airport/crews/
@@ -54,13 +54,13 @@ password: admin
 - api/airport/flights/
 - api/airport/orders/
 
-#### Documentation
+#### 📃 Documentation
 - api/doc/swagger/
 - api/doc/redoc/
 - api/schema
 
 
-## Features
+## ✨ Features
 - JWT Authenticated
 - Documentation is located in /api/doc/swagger/
 - Managing orders and tickets
@@ -68,5 +68,5 @@ password: admin
 - filtering with django_filters and query_params
 - you can upload image for airplane, crew and airport in api/airport/<entity>/upload-image
 
-## DB structure
+## 🗃️ DB structure
 ![DB structure](demo/schema.png)
